@@ -1,6 +1,8 @@
 # LLM Probe
 
-A project that detects **memorization** and **hallucination** in Large Language Models (LLMs) by training lightweight classifiers (probes) on internal activations. Hidden states are extracted directly from the model during generation, eliminating the need for external corpus lookup or fact-checking APIs.
+An Activation-Based Detection of Memorization and Hallucination in Large Language Models.
+
+This project detects **memorization** and **hallucination** in Large Language Models (LLMs) by training lightweight classifiers (probes) on internal activations. Hidden states are extracted directly from the model during generation, eliminating the need for external corpus lookup or fact-checking APIs.
 
 ## Methodology
 
