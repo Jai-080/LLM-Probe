@@ -1,0 +1,2 @@
+[tool.pyrefly]
+python-interpreter-path = "llm_probe/Scripts/python.exe"
