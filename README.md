@@ -58,3 +58,21 @@ llm_probe/
    ```bash
    .\llm_probe\Scripts\python.exe -m llm_probe.verify_setup
    ```
+
+## Reproducing the Dataset
+
+The contents of the `data/` directory (except for configuration/topic seed files) are gitignored to avoid committing large, regeneratable datasets or potentially copyrighted source texts (e.g. song lyrics) to the repository.
+
+To reproduce the labeled memorization dataset locally from scratch, run the following commands in order:
+
+1. **Fetch Wikipedia Leads**: Run the Wikipedia scraper to download and clean the lead paragraphs for configured topics:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/fetch_wiki_leads.py
+   ```
+2. **Populate Manual Categories**: Note that some categories (e.g., `book_openings` and `code_snippets`) are currently populated manually or via future fetch scripts (this process is currently in progress).
+3. **Build and Label the Dataset**: Process all raw texts, query the model to generate continuations, label them, filter out borderline sequences, and compile the final dataset:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/build_memorization_dataset.py
+   ```
+
+*Note: `data/memorization/raw/wiki_topics.txt` is tracked and committed to git as it is a metadata seed list containing no copyrighted text and is required to regenerate the wiki leads.*

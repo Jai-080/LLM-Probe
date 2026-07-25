@@ -10,3 +10,11 @@ __pycache__/
 *$py.class
 .pytest_cache/
 .ipynb_checkpoints/
+
+# Data and results files (regeneratable and potentially copyrighted)
+data/memorization/raw/
+data/memorization/labeled/
+data/hallucination/raw/
+data/hallucination/labeled/
+results/*/*.pkl
+results/*/*.joblib
