@@ -11,10 +11,6 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Data and results files (regeneratable and potentially copyrighted)
-data/memorization/raw/
-data/memorization/labeled/
-data/hallucination/raw/
-data/hallucination/labeled/
-results/*/*.pkl
-results/*/*.joblib
+# Exclude large checkpoint/cache files that exceed GitHub's 100MB size limit
+data/memorization/labeled/activations_checkpoint.pkl
+

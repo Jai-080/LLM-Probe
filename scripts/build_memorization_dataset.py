@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import argparse
-import random
 import torch
 import warnings
 import pandas as pd
@@ -29,6 +28,7 @@ PROMPT_TOKEN_LEN = 40
 MAX_TOTAL_TOKENS = 100
 SIMIDUP_THRESHOLD = 0.95
 MIN_PREFIX_MATCH_TOKENS = 10
+BATCH_SIZE = 16
 
 # Initialize ROUGE scorer
 scorer = rouge_scorer.RougeScorer(['rougeL'], use_stemmer=True)
@@ -61,8 +61,8 @@ def get_matched_token_count(gen_text: str, true_text: str, tokenizer) -> int:
     """
     if not true_text:
         return 0
-    gen_ids = tokenizer.encode(gen_text, add_special_tokens=False)
-    true_ids = tokenizer.encode(true_text, add_special_tokens=False)
+    gen_ids = tokenizer.encode(gen_text.strip(), add_special_tokens=False)
+    true_ids = tokenizer.encode(true_text.strip(), add_special_tokens=False)
     count = 0
     for g, t in zip(gen_ids, true_ids):
         if g == t:
@@ -123,7 +123,7 @@ def is_duplicate_tfidf(candidate_text: str, existing_texts: List[str], threshold
         if (sims > threshold).any():
             return True
     except Exception:
-        # Fallback to exact match if TF-IDF fails (e.g. empty vocab)
+        # Fallback to exact match if TF-IDF fails
         pass
     return False
 
@@ -218,22 +218,32 @@ def main():
     
     # 4. Find All Source Files
     categories = ["book_openings", "lyrics", "code_snippets", "wiki_leads", "novel_prompts"]
-    source_files: List[Tuple[str, str, str]] = []  # List of (category, filename, absolute_path)
+    source_files: List[Tuple[str, str, str]] = []  # (category, item_id, content)
+    import json
     
     for cat in categories:
-        cat_dir = os.path.join(args.raw_dir, cat)
-        if not os.path.isdir(cat_dir):
-            logger.warning(f"Category directory not found: {cat_dir}")
+        jsonl_path = os.path.join(args.raw_dir, f"{cat}.jsonl")
+        if not os.path.exists(jsonl_path):
+            logger.warning(f"Category JSONL file not found: {jsonl_path}")
             continue
             
-        for file in os.listdir(cat_dir):
-            if file.endswith(".txt"):
-                source_files.append((cat, file, os.path.join(cat_dir, file)))
-                
-    logger.info(f"Found {len(source_files)} total raw text files.")
+        with open(jsonl_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    item = json.loads(line)
+                    item_id = item.get("id")
+                    content = item.get("content", "").strip()
+                    if item_id and content:
+                        source_files.append((cat, item_id, content))
+                except Exception as e:
+                    logger.error(f"Error parsing line in {jsonl_path}: {e}")
+                    
+    logger.info(f"Found {len(source_files)} total raw examples.")
     
     # 5. Load Combined Text for TF-IDF Deduplication Cache
-    # We build a cache of combined texts to check similarity against.
     existing_combined_texts: List[str] = []
     if os.path.exists(parquet_out):
         try:
@@ -248,41 +258,41 @@ def main():
         except Exception:
             pass
             
-    # Process files
-    for cat, filename, filepath in source_files:
-        source_id = f"{cat}/{filename}"
-        
-        # Check if already processed
+    # Separate novel prompts (processed individually) and regular files
+    novel_files = []
+    regular_files = []
+    
+    for cat, item_id, content in source_files:
+        source_id = f"{cat}/{item_id}.txt"
         if source_id in processed_ids:
             logger.info(f"Skipping already processed file: {source_id}")
             continue
-            
-        logger.info(f"Processing source: {source_id} ...")
+        if cat == "novel_prompts":
+            novel_files.append((cat, item_id, content))
+        else:
+            regular_files.append((cat, item_id, content))
+
+    logger.info(f"Queue: {len(novel_files)} novel files, {len(regular_files)} regular files to process.")
+
+    # 1. Process regular files in batches
+    tokenizer.padding_side = "left"
+    for start_idx in range(0, len(regular_files), BATCH_SIZE):
+        batch = regular_files[start_idx : start_idx + BATCH_SIZE]
+        logger.info(f"Processing batch of {len(batch)} regular files ({start_idx+1}-{start_idx+len(batch)} of {len(regular_files)}) ...")
         
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                raw_text = f.read().strip()
-                
-            if not raw_text:
-                logger.warning(f"Empty text file: {filepath}, skipping.")
-                continue
-                
-            is_novel_prompt = (cat == "novel_prompts")
-            
-            # Prepare inputs
-            if is_novel_prompt:
-                # Novel prompts: the prompt is the whole text (capped at 50 tokens)
-                p_ids = tokenizer.encode(raw_text, add_special_tokens=False)
-                if len(p_ids) > 50:
-                    p_ids = p_ids[:50]
-                prompt_text = tokenizer.decode(p_ids, skip_special_tokens=True)
-                true_continuation_text = None
-                expected_gen_len = 100 - len(p_ids)
-            else:
-                # Memorization candidates: split into prompt (40 tokens) and continuation
-                tokens = tokenizer.encode(raw_text, add_special_tokens=False)
+        valid_items = []
+        for cat, item_id, content in batch:
+            source_id = f"{cat}/{item_id}.txt"
+            try:
+                if not content:
+                    logger.warning(f"Empty content for {source_id}, skipping.")
+                    processed_ids.add(source_id)
+                    continue
+                    
+                tokens = tokenizer.encode(content, add_special_tokens=False)
                 if len(tokens) < 50:
                     logger.warning(f"File {source_id} has only {len(tokens)} tokens (min 50 required), skipping.")
+                    processed_ids.add(source_id)
                     continue
                     
                 prompt_tokens = tokens[:PROMPT_TOKEN_LEN]
@@ -292,49 +302,66 @@ def main():
                 true_continuation_text = tokenizer.decode(continuation_tokens, skip_special_tokens=True)
                 expected_gen_len = len(continuation_tokens)
                 
-            # Tokenize prompt for the model
-            inputs = tokenizer(prompt_text, return_tensors="pt").to(next(model.parameters()).device)
-            prompt_encoded_len = inputs["input_ids"].shape[1]
-            
-            # Generate continuation from the model
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=expected_gen_len,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id
-            )
-            
-            # Extract generated portion
-            gen_tokens = outputs[0][prompt_encoded_len:]  # type: ignore
-            generated_continuation_text = tokenizer.decode(gen_tokens, skip_special_tokens=True)
-            
-            # Cap example prompt + continuation combined at 100 tokens
-            prompt_text, generated_continuation_text, true_continuation_text = cap_example_tokens(
-                prompt_text, 
-                generated_continuation_text, 
-                true_continuation_text, 
-                tokenizer
-            )
-            
-            # TF-IDF Cosine Similarity Deduplication Check
-            combined_candidate = prompt_text + " " + generated_continuation_text
-            if is_duplicate_tfidf(combined_candidate, existing_combined_texts):
-                logger.warning(f"Skipping duplicate sequence detected by similarity check for {source_id}.")
-                # Store processed ID to avoid re-generating
+                valid_items.append({
+                    "source_id": source_id,
+                    "prompt_text": prompt_text,
+                    "true_continuation_text": true_continuation_text,
+                    "expected_gen_len": expected_gen_len,
+                    "cat": cat
+                })
+            except Exception as e:
+                logger.exception(f"Error parsing source {source_id}: {e}")
                 processed_ids.add(source_id)
-                continue
                 
-            existing_combined_texts.append(combined_candidate)
+        if not valid_items:
+            continue
             
-            # Compute Verification Metrics
-            if is_novel_prompt:
-                rouge_l = None
-                matched_tokens = 0
-                longest_ngram = 0
-                label = "novel"
-                is_borderline = False
-                flag_reason = None
-            else:
+        # Run batch model inference
+        prompt_texts = [item["prompt_text"] for item in valid_items]
+        try:
+            inputs = tokenizer(prompt_texts, return_tensors="pt", padding=True).to(next(model.parameters()).device)
+            input_len = inputs["input_ids"].shape[1]
+            
+            with torch.no_grad():
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=100,  # Generate up to 100 tokens
+                    do_sample=False,
+                    pad_token_id=tokenizer.eos_token_id
+                )
+                
+            # Process outputs per batch item
+            for i, item in enumerate(valid_items):
+                source_id = item["source_id"]
+                prompt_text = item["prompt_text"]
+                true_continuation_text = item["true_continuation_text"]
+                expected_gen_len = item["expected_gen_len"]
+                cat = item["cat"]
+                
+                # Extract generated slice
+                gen_tokens = outputs[i][input_len:]
+                # Truncate to the expected continuation length
+                gen_tokens = gen_tokens[:expected_gen_len]
+                generated_continuation_text = tokenizer.decode(gen_tokens, skip_special_tokens=True)
+                
+                # Cap example prompt + continuation combined at 100 tokens
+                prompt_text, generated_continuation_text, true_continuation_text = cap_example_tokens(
+                    prompt_text, 
+                    generated_continuation_text, 
+                    true_continuation_text, 
+                    tokenizer
+                )
+                
+                # TF-IDF Cosine Similarity Deduplication Check
+                combined_candidate = prompt_text + " " + generated_continuation_text
+                if is_duplicate_tfidf(combined_candidate, existing_combined_texts):
+                    logger.warning(f"Skipping duplicate sequence detected by similarity check for {source_id}.")
+                    processed_ids.add(source_id)
+                    continue
+                    
+                existing_combined_texts.append(combined_candidate)
+                
+                # Compute verification metrics
                 rouge_l = scorer.score(true_continuation_text, generated_continuation_text)['rougeL'].fmeasure
                 matched_tokens = get_matched_token_count(generated_continuation_text, true_continuation_text, tokenizer)
                 longest_ngram = longest_common_ngram_len(generated_continuation_text, true_continuation_text)
@@ -351,39 +378,108 @@ def main():
                 else:
                     is_borderline = False
                     flag_reason = None
-                    # Hard labeling
                     label = "memorized" if rouge_l > 0.7 else "novel"
                     
-            # Structure outputs
+                row = {
+                    "source_id": source_id,
+                    "prompt": prompt_text,
+                    "generated_continuation": generated_continuation_text,
+                    "true_continuation": true_continuation_text,
+                    "label": label,
+                    "source_category": cat,
+                    "rouge_l_score": rouge_l,
+                    "matched_token_count": int(matched_tokens),
+                    "longest_common_ngram_len": int(longest_ngram)
+                }
+                
+                if is_borderline:
+                    row["flag_reason"] = flag_reason
+                    append_row_to_csv(csv_out, row)
+                    logger.info(f"Example {source_id} flagged for review: {flag_reason}")
+                else:
+                    append_row_to_parquet(parquet_out, row)
+                    logger.info(f"Example {source_id} auto-labeled as '{label}' (ROUGE-L={rouge_l})")
+                    
+                processed_ids.add(source_id)
+                
+        except Exception as e:
+            logger.error(f"Error processing batch: {e}")
+            for item in valid_items:
+                processed_ids.add(item["source_id"])
+
+    # 2. Process novel prompts (individually)
+    for cat, item_id, content in novel_files:
+        source_id = f"{cat}/{item_id}.txt"
+        logger.info(f"Processing novel prompt source: {source_id} ...")
+        
+        try:
+            if not content:
+                logger.warning(f"Empty content for {source_id}, skipping.")
+                processed_ids.add(source_id)
+                continue
+                
+            # Novel prompts: prompt is whole text (cap at 50 tokens)
+            p_ids = tokenizer.encode(content, add_special_tokens=False)
+            if len(p_ids) > 50:
+                p_ids = p_ids[:50]
+            prompt_text = tokenizer.decode(p_ids, skip_special_tokens=True)
+            true_continuation_text = None
+            expected_gen_len = 100 - len(p_ids)
+            
+            inputs = tokenizer(prompt_text, return_tensors="pt").to(next(model.parameters()).device)
+            prompt_encoded_len = inputs["input_ids"].shape[1]
+            
+            with torch.no_grad():
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=expected_gen_len,
+                    do_sample=False,
+                    pad_token_id=tokenizer.eos_token_id
+                )
+                
+            gen_tokens = outputs[0][prompt_encoded_len:]
+            generated_continuation_text = tokenizer.decode(gen_tokens, skip_special_tokens=True)
+            
+            # Cap combined tokens
+            prompt_text, generated_continuation_text, true_continuation_text = cap_example_tokens(
+                prompt_text, 
+                generated_continuation_text, 
+                true_continuation_text, 
+                tokenizer
+            )
+            
+            # TF-IDF Cosine Similarity Deduplication Check
+            combined_candidate = prompt_text + " " + generated_continuation_text
+            if is_duplicate_tfidf(combined_candidate, existing_combined_texts):
+                logger.warning(f"Skipping duplicate sequence detected by similarity check for {source_id}.")
+                processed_ids.add(source_id)
+                continue
+                
+            existing_combined_texts.append(combined_candidate)
+            
             row = {
                 "source_id": source_id,
                 "prompt": prompt_text,
                 "generated_continuation": generated_continuation_text,
                 "true_continuation": true_continuation_text,
-                "label": label,
+                "label": "novel",
                 "source_category": cat,
-                "rouge_l_score": rouge_l,
-                "matched_token_count": int(matched_tokens),
-                "longest_common_ngram_len": int(longest_ngram)
+                "rouge_l_score": None,
+                "matched_token_count": 0,
+                "longest_common_ngram_len": 0
             }
             
-            if is_borderline:
-                row["flag_reason"] = flag_reason
-                append_row_to_csv(csv_out, row)
-                logger.info(f"Example {source_id} flagged for review: {flag_reason}")
-            else:
-                append_row_to_parquet(parquet_out, row)
-                logger.info(f"Example {source_id} auto-labeled as '{label}' (ROUGE-L={rouge_l})")
-                
+            append_row_to_parquet(parquet_out, row)
+            logger.info(f"Example {source_id} auto-labeled as 'novel'")
             processed_ids.add(source_id)
             
         except Exception as e:
-            logger.exception(f"Error processing file {filepath}")
+            logger.exception(f"Error processing novel prompt file {filepath}: {e}")
+            processed_ids.add(source_id)
             
     # 6. Final Reporting
     logger.info("=== Labeled Dataset Summary ===")
     
-    # Load outputs for summary
     total_clean = 0
     clean_counts = {}
     cat_counts = {}
