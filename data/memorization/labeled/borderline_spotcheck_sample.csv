@@ -1,0 +1,258 @@
+source_id,prompt,generated_continuation,true_continuation,label,source_category,rouge_l_score,matched_token_count,longest_common_ngram_len,flag_reason,assigned_reason
+book_openings/Alice's_Adventures_Underground.txt,"[Illustration] Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was","reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'
+
+# Answer
+The illustration for this excerpt from ""Alice' Premier Duel: Alice and her sister are sitting","reading, but it had no pictures or conversations in it, and where is the use of a book, thought Alice, without pictures or conversations? So she was considering in her own mind, (as well as she could, for the hot day made her feel very sleepy and stupid,",memorized,book_openings,0.5681818181818181,13,10,Borderline ROUGE-L (0.5-0.7),matched_token_count (13) >= 10
+book_openings/Great_Expectations.txt,". My father’s family name being Pirrip, and my Christian name Philip, my infant tongue could make of both names nothing longer or more explicit than Pip. So, I called myself P","ip, and came to be called Pip.
+
+I was a little man, with fair hair and a fair skin. I was a little bit plump, and I was not a little bit lonely. I was a little boy of fifteen years of age, and I was raised at","ip, and came to be called Pip. I give Pirrip as my father’s family name, on the authority of his tombstone and my sister,—Mrs. Joe Gargery, who married the blacksmith. As I never saw my father or my mother, and",memorized,book_openings,0.2444444444444444,10,8,Low ROUGE-L (0.24) with high exact prefix match (10 tokens),matched_token_count (10) >= 10
+book_openings/The_Adventures_of_Huckleberry_Finn.txt,. You don’t know about me without you have read a book by the name of The Adventures of Tom Sawyer; but that ain’t no matter. That book was made by,"Mr. Mark Twain, and he told the story quite well. Tom Sawyer has been dead many years, and the grave is overgrown with weeds.
+
+Tom Sawyer was a clever boy, and he had a great many friends. He was always up to some","Mr. Mark Twain, and he told the truth, mainly. There was things which he stretched, but mainly he told the truth. That is nothing. I never seen anybody but lied one time or another, without it was Aunt Polly, or the widow, or maybe",memorized,book_openings,0.2528735632183908,10,7,Low ROUGE-L (0.25) with high exact prefix match (10 tokens),matched_token_count (10) >= 10
+wiki_leads/Genghis_Khan.txt,"Genghis Khan, also known as Chinggis Khan, was the founder and first khan of the Mongol Empire. After spending most of his life uniting the Mongol tribes",", he launched a series of military campaigns that resulted in the creation of the largest contiguous",", he launched a series of military campaigns, conquering large parts of China and Central Asia.",novel,wiki_leads,0.5161290322580646,9,7,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/Internet.txt,The Internet is the global system of interconnected computer networks that uses the Internet protocol suite (TCP/IP) to communicate between networks and devices. It is a network of networks that comprises private,", public, academic, business, and government networks.
+
+The Internet has a hierarchical structure, with the largest networks (like the NSFNET in the United States) interconnected to form the backbone, which in turn connects to regional networks, which then connect to local networks",", public, academic, business, and government networks of local to global scope, linked by electronic, wireless, and optical networking technologies. The Internet carries a vast range of information services and resources, such as the interlinked hypertext documents and applications of the World Wide Web (W",memorized,wiki_leads,0.2588235294117647,10,6,Low ROUGE-L (0.26) with high exact prefix match (10 tokens),matched_token_count (10) >= 10 AND ngram_len (6) >= 6
+wiki_leads/Mae_Jemison.txt,"Mae Carol Jemison is an American engineer, physician, and former NASA astronaut. She became the first African-American woman to travel into space when she served as a mission specialist","aboard the Space Shuttle Endeavour onboard mission STS-47 in 1992.
+
+2. **Question:** What are the educational qualifications of Mae Carol Jemison?
+   **Answer:** Mae Carol Jemison","aboard the Space Shuttle Endeavour in 1992. Jemison joined NASA's astronaut corps in 1987 and was selected for the STS-47 mission, during which the Endeavour orbited the Earth for nearly eight days",novel,wiki_leads,0.2666666666666666,11,5,Low ROUGE-L (0.27) with high exact prefix match (11 tokens),Default novel classification
+wiki_leads/Netherlands.txt,"The Netherlands, also informally known as Holland, is a country in Northwestern Europe, with overseas territories in the Caribbean. It is the largest of the four constituent countries","of the Kingdom of the Netherlands. The Netherlands is bordered by Germany to the east, Belgium to the south, and the North Sea to the north and west. The constitutionally separate island countries of Aruba, Curaçao, and Sint Maarten have been combined into the Netherlands as","of the Kingdom of the Netherlands. The Netherlands consists of twelve provinces and three overseas special municipalities. European Netherlands has land borders with Germany to the east and with Belgium to the south, and a coastline to the north and west. It shares maritime borders with the United Kingdom,",novel,wiki_leads,0.5,9,8,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/Norse_mythology.txt,"Norse, Nordic, or Scandinavian mythology, is the body of myths belonging to the North Germanic peoples, stemming from Old Norse religion and continu","ing after the Christianization of Scandinavia. The mythology is preserved in the Icelandic medieval manuscripts known as the Eddas, as well as in later Scandinavian folklore.
+
+The mythology is the subject of modern scholarly study in the","ing after the Christianization of Scandinavia as the Nordic folklore of the modern period. The northernmost extension of Germanic mythology and stemming from Proto-Germanic folklore, Norse mythology consists of tales of various deities, beings,",novel,wiki_leads,0.3333333333333333,10,5,Low ROUGE-L (0.33) with high exact prefix match (10 tokens),Default novel classification
+wiki_leads/Obesity.txt,"Obesity is a medical condition, considered a disease by multiple organizations, in which excess body fat has accumulated to such an extent that it can have negative effects on health. People are classified","as obese when their body mass index (BMI) is 30 or greater.
+
+Obesity is a major risk factor for a number of diseases, including type 2 diabetes, cardiovascular disease, and certain types of cancer. It can also",as obese when their body mass index (BMI)—a person's weight divided by the square of the person's height—is over 30 kg/m2; the range 25–30 kg/m2 is defined as overweight. Some East Asian,memorized,wiki_leads,0.2894736842105264,12,7,Low ROUGE-L (0.29) with high exact prefix match (12 tokens),matched_token_count (12) >= 10 AND ngram_len (7) >= 6
+wiki_leads/OpenCL.txt,"OpenCL is a framework for writing programs that execute across heterogeneous platforms consisting of central processing units (CPUs), graphics processing units (GPUs), digital signal processors (DSPs),","field-programmable gate arrays (FPGAs), and other processors or hardware accelerators. It is used for general-purrunded computing and is particularly well-suited for high-performance computing applications that require parallel processing.
+
+OpenCL provides a standard interface for parallel",field-programmable gate arrays (FPGAs) and other processors or hardware accelerators. OpenCL specifies a programming language for programming these devices and application programming interfaces (APIs) to control the platform and execute programs on the compute devices. OpenCL provides a standard interface for parallel,memorized,wiki_leads,0.5121951219512196,11,7,Borderline ROUGE-L (0.5-0.7),matched_token_count (11) >= 10 AND ngram_len (7) >= 6
+wiki_leads/Regular_expression.txt,"A regular expression, sometimes referred to as a rational expression, is a sequence of characters that specifies a match pattern in text. Usually such patterns are used by string-searching algorithms for ""find",""" or ""find and replace"" operations on strings.
+
+In the context of the provided code snippet, the regular expression `r'\b[A",""" or ""find and replace"" operations on strings, or for input validation. Regular expression techniques are developed in theoretical computer science and formal language theory.",memorized,wiki_leads,0.3999999999999999,10,7,Low ROUGE-L (0.40) with high exact prefix match (10 tokens),matched_token_count (10) >= 10 AND ngram_len (7) >= 6
+wiki_leads/Sahara_desert.txt,"The Sahara is a desert spanning North Africa. With an area of 9,200,000 square kilometres (3,600,000 sq mi),","it is the largest hot desert in the world. The desert stretches from the Atlantic Ocean in the west to the Indian Ocean in the east, and from the Mediter","it is the largest hot desert in the world and the third-largest desert overall, smaller only than the deserts of Antarctica and the northern Arctic.",novel,wiki_leads,0.5,9,8,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/Television.txt,"Television (TV) is a telecommunication medium for transmitting moving images and sound. Additionally, the term can refer to a physical television set rather than the medium of transmission. Television is a mass","medium for advertising, entertainment, news, and educational purposes.
+
+Television broadcasting is a method of transmitting moving images and sound from a source to a receiver","medium for advertising, entertainment, news, and sports. The medium is capable of more than ""radio broadcasting"", which refers to an audio signal sent to radio receivers.",memorized,wiki_leads,0.392156862745098,11,6,Low ROUGE-L (0.39) with high exact prefix match (11 tokens),matched_token_count (11) >= 10 AND ngram_len (6) >= 6
+wiki_leads/Virus.txt,"A virus is a submicroscopic infectious agent that replicates only inside the living cells of an organism. Viruses infect all life forms, from animals and plants to microorgan","isms, including bacteria and archaea.
+
+Viruses are composed of genetic material, either DNA or RNA, surrounded by a protective coat of protein called a capsid. Some viruses also have an outer envelope made of lipids. Unlike b","isms, including bacteria and archaea. Viruses are found in almost every ecosystem on Earth and are the most numerous type of biological entity. Since the first discovery of a virus, the tobacco mosaic virus, in the 1890s",memorized,wiki_leads,0.2702702702702703,12,7,Low ROUGE-L (0.27) with high exact prefix match (12 tokens),matched_token_count (12) >= 10 AND ngram_len (7) >= 6
+wiki_leads/Vladimir_Lenin.txt,"Vladimir Ilyich Ulyanov, better known as Vladimir Lenin, was a Russian revolutionary, politician and political theorist. He was the first head of government of Soviet Russia from","1917 to 1922 and of the Soviet Union from 1922 to 1923. Lenin was a key political leader of the Bolsheviks, the party that led the October Revolution in Russia in 1917.","1917 to 1922, and the first head of government of the Soviet Union from 1922 until his death in 1924. As the Bolsheviks' founder, Lenin led the October Revolution, which established the world'",memorized,wiki_leads,0.4923076923076923,11,6,Low ROUGE-L (0.49) with high exact prefix match (11 tokens),matched_token_count (11) >= 10 AND ngram_len (6) >= 6
+code_snippets/Catalan_numbers.txt,"from math import factorial
+import functools
+
+
+def memoize(func):
+    cache = {}
+
+    def memoized(key):
+        # Returned","value from the function
+        if key not in cache:
+            cache[key] = func(key)
+        return cache[key]
+
+    return functools.wraps(func)(memoized)
+
+
+@memoize
+def factorial_",", new, memoized version of decorated function
+        if key not in cache:
+            cache[key] = func(key)
+        return cache[key]
+    return functools.update_wrapper(memoized, func)
+
+
+@memo",novel,code_snippets,0.6530612244897959,0,12,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/Floyd-Warshall_algorithm.txt,"from math import inf
+from itertools import product
+
+def floyd_warshall(n, edge):
+    rn = range(n)
+    dist = [[inf]","* n for _ in rn]
+    for i in rn:
+        dist[i][i] = 0
+    for a, b, c in edge:
+        dist[a][b] = c
+        dist[b][a] = c
+   ","* n for i in rn]
+    nxt  = [[0]   * n for i in rn]
+    for i in rn:
+        dist[i][i] = 0
+    for u, v, w in edge:
+        dist[",novel,code_snippets,0.6037735849056604,3,10,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/LU_decomposition.txt,"from pprint import pprint
+
+def matrixMul(A, B):
+    TB = list(zip(*B))
+    return [[sum(ea * eb for ea",", eb in zip(a, b)) for b in TB] for a in A]
+
+def matrixAdd(A, B):
+    return [[a + b for a, b in zip(a, b)] for a, b in zip(A, B)]
+",", eb in zip(a, b)) for b in TB] for a in A]
+
+def pivotize(m):
+    """"""Creates the pivoting matrix for m.""""""
+    n = len(m)
+    ID = [[float(i == j)",novel,code_snippets,0.4761904761904761,23,14,Low ROUGE-L (0.48) with high exact prefix match (23 tokens),Default novel classification
+code_snippets/Miller-Rabin_primality_test.txt,"from random import randrange
+
+def is_Prime(n: int):
+    """"""
+    Miller-Rabin primality test.
+
+    A return value of False means","n is not prime.
+    A return value of True means n is very likely prime.
+    """"""
+    if n == 2 or n == 3:
+        return True
+    if n % 2 == 0 or n < 2:
+        return False
+","n is certainly not prime. A return value of
+    True means n is very likely a prime.
+    """"""
+    #Miller-Rabin test for primes
+    if n in [2,3,5,7]:
+        return True
+    elif n<",novel,code_snippets,0.676923076923077,2,12,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/Quickselect_algorithm.txt,"import random
+
+def partition(vector, left, right, pivotIndex):
+    pivotValue = vector[pivotIndex]
+    vector[pivotIndex], vector[right] =","vector[right], vector[pivotIndex]
+    storeIndex = left
+    for i in range(left, right):
+        if vector[i] < pivotValue:
+串排序
+
+def quicksort(vector, left, right):
+    if left","vector[right], vector[pivotIndex]  # Move pivot to end
+    storeIndex = left
+    for i in range(left, right):
+        if vector[i] < pivotValue:
+            vector[storeIndex], vector[i] = vector[i],",novel,code_snippets,0.693877551020408,10,12,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/merge_sort.txt,"def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = merge_sort","(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    sorted_array = []
+    left_index, right_index = 0, 0
+   ","(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    while i < len(left) and j",novel,code_snippets,0.6666666666666666,38,10,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/observer_pattern.txt,"class Subject:
+    def __init__(self):
+        self._observers = []
+
+    def attach(self, observer):
+        self._observers.append","(observer)
+
+    def detach(self, observer):
+ composes a list of observers.
+
+    def notify(self, *args, **kwargs):
+        for observer in self._observers:
+            observer.update(*args, **kwargs)","(observer)
+
+    def notify(self, *args, **kwargs):
+        for observer in self._observers:
+            observer.update(*args, **kwargs)
+
+class Observer:
+    def update(self, *args, **kwargs):
+",novel,code_snippets,0.6521739130434783,8,10,Borderline ROUGE-L (0.5-0.7),Default novel classification
+book_openings/Madame_Bovary.txt,Gustave Flaubert MADAME BOVARY (1857) Table des matières PREMIÈRE PARTIE I II III IV V VI VII VIII IX DE,UXIÈME PARTIE I I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX PREMIÈRE PARTIE I I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX II P,UXIÈME PARTIE I II III IV V VI VII VIII IX X XI XII XIII XIV XV TROISIÈME PARTIE I II III IV V VI VII VIII IX X XI À Marie-Antoine-Jules Senard MEMBRE DU B,memorized,book_openings,0.6741573033707865,9,15,Borderline ROUGE-L (0.5-0.7),longest_common_ngram_len (15) >= 8
+code_snippets/Audio_alarm.txt,"import time
+import os
+
+seconds = input(""Enter a number of seconds: "")
+sound = input(""Enter an mp3 filename: "")
+
+time.sleep(float(seconds))","
+
+os.system(""start "" + sound)
+","
+os.startfile(sound + "".mp3"")",novel,code_snippets,0.5,2,1,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/Pythagorean_triples.txt,"from math import gcd
+
+def pt1(maxperimeter=100):
+    '''
+# Naive method
+    '''
+    trips = []
+    for a","in range(1, maxperimeter):
+        for b in range(a, maxperimeter):
+            c = (a + b) / 2
+            if a + b > c and a + c > b and b + c > a:
+                trips.","in range(1, maxperimeter):
+        aa = a*a
+        for b in range(a, maxperimeter-a+1):
+            bb = b*b
+            for c in range(b, maxperimeter-b-a+1):",novel,code_snippets,0.6296296296296297,11,4,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/Volcanology.txt,"Volcanology is the study of volcanoes, lava, magma, and related geological, geophysical and geochemical phenomena (volcanism). The term","volcanology is derived from the Vulcan, the Roman god of fire and metalworking, from the Latin",volcanology is derived from the Latin word vulcan. Vulcan was the ancient Roman god of fire.,novel,wiki_leads,0.6875,7,5,Borderline ROUGE-L (0.5-0.7),Default novel classification
+code_snippets/10001th_prime.txt,"#!/usr/bin/python
+
+def isPrime(n):
+    for i in range(2, int(n**0.5) + 1):
+        if n","% i == 0:
+            return False
+    return True
+
+def primes(n):
+    for i in range(2, n):
+        if isPrime(i):
+            print(i)
+
+primes(100)
+
+#","% i == 0:
+            return False        
+    return True
+
+def prime(n: int) -> int:
+    if n == 1:
+        return 2
+    p = 3
+    pn = 1
+    while pn < n",novel,code_snippets,0.4888888888888889,10,9,Low ROUGE-L (0.49) with high exact prefix match (10 tokens),Default novel classification
+code_snippets/Smith_numbers.txt,"from sys import stdout
+
+
+def factors(n):
+    rt = []
+    f = 2
+    if n == 1:
+        rt.append(1",")
+    while n > 1:
+        if n % f == 0:
+ht = 0
+        rt.append(f)
+        n /= f
+        f += 1
+    return rt
+
+
+def main():
+    n =",");
+    else:
+        while 1:
+            if 0 == ( n % f ):
+                rt.append(f);
+                n //= f
+                if n == 1:
+                    return rt
+            else:
+                f +=",novel,code_snippets,0.6500000000000001,0,3,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/B-tree.txt,"In computer science, a B-tree is a self-balancing tree data structure that maintains sorted data and allows searches, sequential access, insertions, and deletions in logarithmic",time. The B-tree is a generalization of a binary search tree in that a node can have more,"time. The B-tree generalizes the binary search tree, allowing nodes to have more than two children.",novel,wiki_leads,0.6111111111111113,6,3,Borderline ROUGE-L (0.5-0.7),Default novel classification
+wiki_leads/Ballet.txt,Ballet is a type of performance dance that originated during the Italian Renaissance in the fifteenth century and later developed into a concert dance form in France and Russia. It has since become a wides,"pread and highly technical form of dance with its own vocabulary, performance techniques, and aesthetic standards.
+
+The term ""ballet"" comes from the Italian word ""balletto,"" which means ""little dance."" Ballet was initially performed as part of a",pread and highly technical form of dance with its own vocabulary. Ballet has been influential globally and has defined the foundational techniques which are used in many other dance genres and cultures. Various schools around the world have incorporated their own cultures. As a,memorized,wiki_leads,0.419753086419753,15,10,Low ROUGE-L (0.42) with high exact prefix match (15 tokens),matched_token_count (15) >= 10 AND ngram_len (10) >= 6
