@@ -10,7 +10,7 @@ from typing import List, Dict, Tuple, Set
 from rouge_score import rouge_scorer
 
 # Include parent workspace folder in path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from llm_probe.config import MODEL_NAME, DEVICE
 

@@ -13,4 +13,5 @@ __pycache__/
 
 # Exclude large checkpoint/cache files that exceed GitHub's 100MB size limit
 data/memorization/labeled/activations_checkpoint.pkl
+data/hallucination/labeled/activations_checkpoint.pkl
 

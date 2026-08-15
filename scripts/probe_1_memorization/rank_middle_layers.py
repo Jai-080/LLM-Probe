@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 # Include parent folder in path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from llm_probe.core.layer_selection import rank_layers
 
