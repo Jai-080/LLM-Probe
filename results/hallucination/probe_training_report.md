@@ -5,77 +5,77 @@
 - **Selected Probe Layers (Top 3)**: `[32, 15, 17]`
 
 ## In-Domain Evaluation (80/20 Stratified Split)
-- **Accuracy**: `0.6074`
-- **Precision**: `0.6512`
-- **Recall**: `0.6222`
-- **F1 Score**: `0.6364`
-- **MLP Validation F1**: `0.6813`
+- **Accuracy**: `0.6687`
+- **Precision**: `0.7160`
+- **Recall**: `0.6591`
+- **F1 Score**: `0.6864`
+- **MLP Validation F1**: `0.7241`
 
 ### Confusion Matrix (Linear):
 ```
-[[43 30]
- [34 56]]
+[[49 23]
+ [30 58]]
 ```
 
 ### Classification Report (Linear):
 ```
               precision    recall  f1-score   support
 
-           0       0.56      0.59      0.57        73
-           1       0.65      0.62      0.64        90
+           0       0.62      0.68      0.65        72
+           1       0.72      0.66      0.69        88
 
-    accuracy                           0.61       163
-   macro avg       0.60      0.61      0.60       163
-weighted avg       0.61      0.61      0.61       163
+    accuracy                           0.67       160
+   macro avg       0.67      0.67      0.67       160
+weighted avg       0.67      0.67      0.67       160
 
 ```
 
 ## Held-Out Category Generalization Tests
 
 ### Hold-Out Category: `Misconceptions`
-- **Generalization F1**: `0.4359`
-- **Generalization Accuracy**: `0.5600`
-- **Generalization Precision**: `0.5312`
-- **Generalization Recall**: `0.3696`
-- **Positive Predictions Made**: `32`
+- **Generalization F1**: `0.3947`
+- **Generalization Accuracy**: `0.5400`
+- **Generalization Precision**: `0.5000`
+- **Generalization Recall**: `0.3261`
+- **Positive Predictions Made**: `30`
 
 #### Confusion Matrix:
 ```
 [[39 15]
- [29 17]]
+ [31 15]]
 ```
 ```
               precision    recall  f1-score   support
 
-           0       0.57      0.72      0.64        54
-           1       0.53      0.37      0.44        46
+           0       0.56      0.72      0.63        54
+           1       0.50      0.33      0.39        46
 
-    accuracy                           0.56       100
-   macro avg       0.55      0.55      0.54       100
-weighted avg       0.55      0.56      0.55       100
+    accuracy                           0.54       100
+   macro avg       0.53      0.52      0.51       100
+weighted avg       0.53      0.54      0.52       100
 
 ```
 
 ### Hold-Out Category: `Law`
-- **Generalization F1**: `0.5974`
-- **Generalization Accuracy**: `0.5156`
-- **Generalization Precision**: `0.6571`
-- **Generalization Recall**: `0.5476`
-- **Positive Predictions Made**: `35`
+- **Generalization F1**: `0.6133`
+- **Generalization Accuracy**: `0.5246`
+- **Generalization Precision**: `0.6765`
+- **Generalization Recall**: `0.5610`
+- **Positive Predictions Made**: `34`
 
 #### Confusion Matrix:
 ```
-[[10 12]
- [19 23]]
+[[ 9 11]
+ [18 23]]
 ```
 ```
               precision    recall  f1-score   support
 
-           0       0.34      0.45      0.39        22
-           1       0.66      0.55      0.60        42
+           0       0.33      0.45      0.38        20
+           1       0.68      0.56      0.61        41
 
-    accuracy                           0.52        64
-   macro avg       0.50      0.50      0.49        64
-weighted avg       0.55      0.52      0.53        64
+    accuracy                           0.52        61
+   macro avg       0.50      0.51      0.50        61
+weighted avg       0.56      0.52      0.54        61
 
 ```
