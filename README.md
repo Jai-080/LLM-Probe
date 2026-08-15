@@ -2,14 +2,18 @@
 
 An Activation-Based Detection of Memorization and Hallucination in Large Language Models.
 
-This project detects **memorization** and **hallucination** in Large Language Models (LLMs) by training lightweight classifiers (probes) on internal activations. Hidden states are extracted directly from the model during generation, eliminating the need for external corpus lookup or fact-checking APIs.
+This project detects **memorization** (verbatim text reproduction) and **hallucination** (factually incorrect/unsupported generations) in Large Language Models (LLMs) by training lightweight classifiers (probes) on internal activation vectors. Hidden states are extracted directly from the target model during generation, eliminating the need for external database queries or fact-checking APIs.
+
+---
 
 ## Methodology
 
-1. **Activation Extraction**: Prompts and continuations are fed into the target model (e.g., `Phi-3-mini-4k-instruct` loaded in 4-bit quantization). Per-layer hidden states are extracted for the continuation tokens.
-2. **Layer Selection (Ranking)**: Cohen's $d$ effect size is computed across layers to identify which transformer layers exhibit the most distinct activation patterns for the target behavior (memorization vs. hallucination).
-3. **Probe Training**: Lightweight logistic regression classifiers are trained on the extracted activations of the selected layers.
-4. **Token-by-Token Visualizer**: A Gradio web app renders generated tokens color-coded by their predicted probability of being memorized/hallucinated.
+1. **Activation Extraction**: Prompts and generated continuations are fed into the target model (`Phi-3-mini-4k-instruct` loaded in 4-bit quantization). Per-layer hidden states are extracted specifically for the continuation/response tokens.
+2. **Layer Selection (Ranking)**: Cohen's $d$ effect size is computed across all 32 layers to identify which transformer layers exhibit the most distinct activation patterns for the target behavior.
+3. **Probe Training**: Lightweight Logistic Regression classifiers (probes) are trained on the concatenated, scaled activations of the top 3 selected layers.
+4. **Token-by-Token Visualizer**: A Gradio web app renders generated tokens color-coded by their predicted probability of being memorized or hallucinated.
+
+---
 
 ## Project Structure
 
@@ -25,28 +29,50 @@ llm_probe/
 ├── data/
 │   ├── memorization/
 │   │   ├── raw/           # raw source texts by category
-│   │   └── labeled/       # final labeled dataset (prompt, continuation, label, category)
+│   │   └── labeled/       # final labeled dataset
 │   └── hallucination/
-│       └── labeled/       # TruthfulQA/HaluEval derived labeled dataset
+│       └── labeled/       # TruthfulQA derived cleaned dataset (dataset.parquet)
 ├── scripts/
-│   ├── build_memorization_dataset.py   # ROUGE-L verification pipeline
-│   ├── build_hallucination_dataset.py  # model response generation and labeling
-│   ├── train_memorization_probe.py     # full training and evaluation pipeline
-│   └── train_hallucination_probe.py    # full training and evaluation pipeline
+│   ├── data_collection/
+│   │   ├── fetch_wiki_leads.py              # Wikipedia lead paragraph scraper
+│   │   ├── fetch_book_openings.py           # Project Gutenberg openings fetcher
+│   │   ├── fetch_code_snippets.py           # GitHub code snippets downloader
+│   │   ├── fetch_more_snippets.py           # Supplemental code snippets fetcher
+│   │   ├── merge_supplemental_snippets.py   # Code snippets merger
+│   │   ├── migrate_txt_to_jsonl.py          # Format migration utility
+│   │   └── extract_failed_wiki_topics.py    # Wikipedia retry scraper
+│   ├── probe_1_memorization/
+│   │   ├── build_memorization_dataset.py   # Response generation and ROUGE-L labeling
+│   │   ├── review_borderline.py             # Re-score and filter borderline cases
+│   │   ├── summarize_manual_review.py       # Final merge of manual decisions
+│   │   ├── train_memorization_probe.py      # Layer selection and probe training
+│   │   ├── verify_teacher_forcing.py        # Teacher forcing validation checks
+│   │   ├── test_demo_prompts.py             # Live demo probe verification
+│   │   └── rank_middle_layers.py            # Middle-layer activation explorer
+│   └── probe_2_hallucination/
+│       ├── build_hallucination_dataset.py   # Response generation and ROUGE-L recall labeling
+│       ├── review_hallucination_labels.py   # Boilerplate stripping & Entity Guard cleanup
+│       ├── export_reconsidered_for_review.py# Export reconsidered rows to CSV
+│       ├── apply_reconsidered_decisions.py  # Validate and merge reconsidered rows
+│       ├── export_newly_resolved_for_review.py # Export resolved ambiguous rows
+│       ├── apply_newly_resolved_decisions.py  # Validate and merge resolved rows
+│       ├── export_needs_manual_review_for_review.py # Export remaining ambiguous rows
+│       ├── apply_needs_manual_review_decisions.py  # Validate and merge remaining rows
+│       └── train_hallucination_probe.py     # Layer selection, training, & generalization tests
 ├── demo/
 │   └── app.py             # Gradio interactive visualizer
 ├── results/
-│   ├── memorization/      # saved probe (.pkl), metrics, plots
-│   └── hallucination/
-├── notebooks/
-│   └── exploration.ipynb  # notebook for scratch testing
+│   ├── memorization/      # Probe weights (.joblib), metrics report, rankings plot
+│   └── hallucination/     # Probe weights (.joblib), metrics report, rankings plot
 ├── requirements.txt
 └── README.md
 ```
 
+---
+
 ## Setup & Verification
 
-1. Create a local python virtual environment:
+1. Create a local Python virtual environment:
    ```bash
    python -m venv llm_probe
    ```
@@ -59,20 +85,69 @@ llm_probe/
    .\llm_probe\Scripts\python.exe -m llm_probe.verify_setup
    ```
 
-## Reproducing the Dataset
+---
 
-The contents of the `data/` directory (except for configuration/topic seed files) are gitignored to avoid committing large, regeneratable datasets or potentially copyrighted source texts (e.g. song lyrics) to the repository.
+## Reproducing & Training Probe 1 (Memorization)
 
-To reproduce the labeled memorization dataset locally from scratch, run the following commands in order:
-
-1. **Fetch Wikipedia Leads**: Run the Wikipedia scraper to download and clean the lead paragraphs for configured topics:
+1. **Scrape Wikipedia Leads**:
    ```bash
-   .\llm_probe\Scripts\python.exe scripts/fetch_wiki_leads.py
+   .\llm_probe\Scripts\python.exe scripts/data_collection/fetch_wiki_leads.py
    ```
-2. **Populate Manual Categories**: Note that some categories (e.g., `book_openings` and `code_snippets`) are currently populated manually or via future fetch scripts (this process is currently in progress).
-3. **Build and Label the Dataset**: Process all raw texts, query the model to generate continuations, label them, filter out borderline sequences, and compile the final dataset:
+2. **Fetch Book & Code Openings**: Scrape Project Gutenberg book openings and GitHub code snippets using the collection utilities in `scripts/data_collection/`.
+3. **Build & Label Dataset**: Query the model, score responses using ROUGE-L, and save to Parquet:
    ```bash
-   .\llm_probe\Scripts\python.exe scripts/build_memorization_dataset.py
+   .\llm_probe\Scripts\python.exe scripts/probe_1_memorization/build_memorization_dataset.py
+   ```
+4. **Train Memorization Probe**: Run activation extraction, layer selection, and probe training:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/probe_1_memorization/train_memorization_probe.py
    ```
 
-*Note: `data/memorization/raw/wiki_topics.txt` is tracked and committed to git as it is a metadata seed list containing no copyrighted text and is required to regenerate the wiki leads.*
+---
+
+## Reproducing & Training Probe 2 (Hallucination)
+
+1. **Build Generation Dataset**: Run inference on TruthfulQA and auto-label with ROUGE-L Recall:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/build_hallucination_dataset.py
+   ```
+2. **Run Post-Processing Cleanup**: Strip boilerplate question prefixes and run the Entity-Based Guard to flag suspect labels:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/review_hallucination_labels.py
+   ```
+3. **Review Flagged Subsets**: Run the export scripts, fill in final decisions in the generated CSVs (`grounded`/`hallucinated`/`exclude`), and merge them back to the primary dataset:
+   ```bash
+   # Reconsidered Rows (41)
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/export_reconsidered_for_review.py
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/apply_reconsidered_decisions.py
+
+   # Newly Resolved Rows (91)
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/export_newly_resolved_for_review.py
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/apply_newly_resolved_decisions.py
+
+   # Remaining Ambiguous Rows (268)
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/export_needs_manual_review_for_review.py
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/apply_needs_manual_review_decisions.py
+   ```
+4. **Train Hallucination Probe**: Perform layer selection (via absolute Cohen's $d$) and train standard and MLP probes on the final 813 clean examples:
+   ```bash
+   .\llm_probe\Scripts\python.exe scripts/probe_2_hallucination/train_hallucination_probe.py
+   ```
+
+---
+
+## Results & Findings
+
+### Probe 1: Memorization
+*   **Best Representation**: `mean_pooled`
+*   **Selected Probe Layers**: `[32, 1, 17]`
+*   **In-Domain F1 Score**: `0.985` (Logistic Regression) / `0.988` (MLP)
+*   **Out-of-Distribution Generalization F1**: `0.925` (trained on Wikipedia/Books, tested on code snippets)
+
+### Probe 2: Hallucination
+*   **Best Representation**: `mean_pooled`
+*   **Selected Probe Layers**: `[32, 15, 17]`
+*   **In-Domain F1 Score**: `0.636` (Logistic Regression) / `0.681` (MLP)
+*   **Category Generalization F1 (Held-out)**:
+    *   **Misconceptions (Held-out)**: F1 = `0.436` (Accuracy: `0.560`, Precision: `0.619`)
+    *   **Law (Held-out)**: F1 = `0.597` (Accuracy: `0.516`, Precision: `0.882`)
