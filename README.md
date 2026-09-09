@@ -11,7 +11,7 @@ This project detects **memorization** (verbatim text reproduction) and **halluci
 1. **Activation Extraction**: Prompts and generated continuations are fed into the target model (`Phi-3-mini-4k-instruct` loaded in 4-bit quantization). Per-layer hidden states are extracted specifically for the continuation/response tokens.
 2. **Layer Selection (Ranking)**: Cohen's $d$ effect size is computed across all 32 layers to identify which transformer layers exhibit the most distinct activation patterns for the target behavior.
 3. **Probe Training**: Lightweight Logistic Regression classifiers (probes) are trained on the concatenated, scaled activations of the top 3 selected layers.
-4. **Token-by-Token Visualizer**: A Gradio web app renders generated tokens color-coded by their predicted probability of being memorized or hallucinated.
+4. **Token-by-Token CLI Live Inference**: A terminal interface generates text in real-time with per-token risk probing, ANSI color-coded tokens, risk summaries, and prompt/generated/total token counts.
 
 ---
 
@@ -60,7 +60,9 @@ llm_probe/
 │       ├── apply_needs_manual_review_decisions.py  # Validate and merge remaining rows
 │       └── train_hallucination_probe.py     # Layer selection, training, & generalization tests
 ├── demo/
-│   └── app.py             # Gradio interactive visualizer
+│   ├── inference.py       # Autoregressive generation & per-token live probe
+│   └── render.py          # ANSI terminal rendering & summary formatting
+├── cli.py                 # Top-level CLI entry point (interactive REPL & single-prompt)
 ├── results/
 │   ├── memorization/      # Probe weights (.joblib), metrics report, rankings plot
 │   └── hallucination/     # Probe weights (.joblib), metrics report, rankings plot
@@ -84,6 +86,35 @@ llm_probe/
    ```bash
    .\llm_probe\Scripts\python.exe -m llm_probe.verify_setup
    ```
+
+---
+
+## Live CLI Inference
+
+Live token-by-token risk analysis runs directly in your terminal with full ANSI color coding, statistical risk summaries, generated answer token counts, and token limit controls. **Both Memorization and Hallucination probes run simultaneously by default.**
+
+### 1. Interactive REPL Mode (Recommended)
+Loads the model and both probes once into memory, allowing you to test multiple prompts interactively without reload overhead:
+```bash
+.\llm_probe\Scripts\python.exe cli.py
+```
+*Inside the REPL, enter any prompt to get simultaneous dual-probe scoring `[M:0.95|H:0.02]`. Use `/tokens <n>` to change the generated answer token limit (e.g. `/tokens 60`), and `/exit` or `quit` to exit.*
+
+### 2. Single-Prompt Execution
+
+**Simultaneous Dual Probing (Default)**:
+```bash
+.\llm_probe\Scripts\python.exe cli.py --prompt "Alice was beginning to get very tired of sitting by her sister" --max_tokens 50
+```
+
+**Single Probe Focus (Optional)**:
+```bash
+# Memorization only
+.\llm_probe\Scripts\python.exe cli.py --task memorization --prompt "Alice was beginning to get very tired" --max_tokens 50
+
+# Hallucination only
+.\llm_probe\Scripts\python.exe cli.py --task hallucination --prompt "Can you catch a cold from being cold?" --max_tokens 50
+```
 
 ---
 

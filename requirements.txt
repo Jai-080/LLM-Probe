@@ -10,5 +10,4 @@ pandas
 numpy
 matplotlib
 seaborn
-gradio
 rouge-score

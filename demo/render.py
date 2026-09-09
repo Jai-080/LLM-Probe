@@ -1,192 +1,144 @@
-import os
-
-def render_terminal(results):
-    """
-    Renders results in the terminal with ANSI colors.
-    """
-    if not results:
-        print("No tokens generated.")
-        return
-        
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
-    GREEN = "\033[92m"
-    RESET = "\033[0m"
-    
-    print("\n=== Generated Text with Inline Memorization Risk ===")
-    for item in results:
-        token = item['token']
-        score = item['mem_score']
-        
-        # Color mapping based on score
-        if score >= 0.6:
-            color = RED
-        elif score >= 0.3:
-            color = YELLOW
-        else:
-            color = GREEN
-            
-        # Display inline
-        print(f"{token}{color}[MEM:{score:.2f}]{RESET}", end="")
-    print()
-    
-    # Summary
-    scores = [item['mem_score'] for item in results]
-    max_score = max(scores)
-    avg_score = sum(scores) / len(scores)
-    
-    if max_score >= 0.6:
-        risk_level = f"{RED}HIGH{RESET}"
-    elif max_score >= 0.3:
-        risk_level = f"{YELLOW}MEDIUM{RESET}"
-    else:
-        risk_level = f"{GREEN}LOW{RESET}"
-        
-    print("\n=== Response Summary ===")
-    print(f"- Memorization risk: {risk_level} (max token score: {max_score:.4f}, avg score: {avg_score:.4f})")
-    print("="*50 + "\n")
-
-def get_color_for_score(score):
-    """
-    Calculates HSL color values based on the score (gradient from green to yellow to red).
-    Green is Hue=120, Red is Hue=0.
-    """
-    # Clip score to [0.0, 1.0]
-    score = max(0.0, min(1.0, score))
-    # Map score to Hue (120 -> 0)
-    hue = int(120 * (1 - score))
-    # Low score = low opacity (soft highlight), High score = high opacity (vibrant highlight)
-    opacity = 0.2 + (0.6 * score)
-    return f"hsla({hue}, 85%, 50%, {opacity:.2f})", f"hsla({hue}, 85%, 35%, 0.8)"
-
-def render_html(results, output_path):
-    """
-    Generates a standalone, beautiful HTML report showing color-coded tokens.
-    """
-    if not results:
-        return
-        
-    scores = [item['mem_score'] for item in results]
-    max_score = max(scores)
-    
-    if max_score >= 0.6:
-        risk_text = "HIGH"
-        risk_color = "#ef4444"
-    elif max_score >= 0.3:
-        risk_text = "MEDIUM"
-        risk_color = "#eab308"
-    else:
-        risk_text = "LOW"
-        risk_color = "#22c55e"
-        
-    # Generate inline spans for tokens
-    token_spans = []
-    for item in results:
-        token = item['token']
-        score = item['mem_score']
-        bg_color, border_color = get_color_for_score(score)
-        
-        # Escape HTML special characters
-        escaped_token = token.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        
-        span = (
-            f'<span style="background-color: {bg_color}; border-bottom: 2px solid {border_color}; '
-            f'padding: 1px 3px; margin: 0 1px; border-radius: 2px; cursor: help; display: inline-block;" '
-            f'title="Memorization Score: {score:.4f}">{escaped_token}</span>'
-        )
-        token_spans.append(span)
-        
-    html_content = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>LLM Probe - Memorization Inference Report</title>
-    <style>
-        body {{
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            padding: 40px;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-        }}
-        .container {{
-            max-width: 800px;
-            width: 100%;
-            background-color: #1e293b;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-        }}
-        h1 {{
-            font-size: 24px;
-            margin-top: 0;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 15px;
-            color: #38bdf8;
-        }}
-        .summary {{
-            background-color: #0f172a;
-            border-radius: 8px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            border-left: 4px solid {risk_color};
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }}
-        .summary-label {{
-            font-size: 14px;
-            color: #94a3b8;
-        }}
-        .summary-value {{
-            font-size: 18px;
-            font-weight: 700;
-            color: {risk_color};
-        }}
-        .text-display {{
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 20px;
-            white-space: pre-wrap;
-            line-height: 2.0;
-            font-size: 16px;
-        }}
-        .footer {{
-            margin-top: 30px;
-            font-size: 12px;
-            color: #64748b;
-            text-align: center;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>LLM Probe - Per-Token Memorization Analysis</h1>
-        <div class="summary">
-            <div>
-                <div class="summary-label">OVERALL MEMORIZATION RISK</div>
-                <div class="summary-value" style="font-size: 24px;">{risk_text}</div>
-            </div>
-            <div>
-                <div class="summary-label" style="text-align: right;">MAX TOKEN RISK SCORE</div>
-                <div class="summary-value" style="text-align: right;">{max_score:.4f}</div>
-            </div>
-        </div>
-        
-        <div class="text-display">{''.join(token_spans)}</div>
-        
-        <div class="footer">
-            Generated by LLM Probe • Growing-window mean-pool activation classification
-        </div>
-    </div>
-</body>
-</html>
 """
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    print(f"Saved HTML analysis report to: {output_path}")
+CLI Rendering Utilities for LLM Probe Live Inference.
+Provides ANSI color-coded token display and dual-probe execution summaries.
+"""
+
+# ANSI Color Codes
+CYAN = "\033[96m"
+BOLD_CYAN = "\033[1;96m"
+RED = "\033[91m"
+BOLD_RED = "\033[1;91m"
+YELLOW = "\033[93m"
+BOLD_YELLOW = "\033[1;93m"
+GREEN = "\033[92m"
+BOLD_GREEN = "\033[1;92m"
+GRAY = "\033[90m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+
+def get_risk_level_str(max_score):
+    """Returns ANSI formatted risk level string based on max score."""
+    if max_score >= 0.6:
+        return f"{BOLD_RED}HIGH{RESET}"
+    elif max_score >= 0.3:
+        return f"{BOLD_YELLOW}MEDIUM{RESET}"
+    else:
+        return f"{BOLD_GREEN}LOW{RESET}"
+
+
+def format_colored_score(tag, score):
+    """Formats a single score with ANSI color coding."""
+    if score >= 0.6:
+        return f"{BOLD_RED}{tag}:{score:.2f}{RESET}"
+    elif score >= 0.3:
+        return f"{BOLD_YELLOW}{tag}:{score:.2f}{RESET}"
+    else:
+        return f"{GREEN}{tag}:{score:.2f}{RESET}"
+
+
+def render_terminal(results, task="both", token_counts=None):
+    """
+    Renders generated tokens with inline ANSI risk coloring and a detailed summary table.
+    Supports single probe (memorization or hallucination) or dual probes simultaneously.
+
+    Args:
+        results: list of dicts, each with 'token', and 'mem_score' and/or 'halluc_score'
+        task: str, 'both', 'memorization', or 'hallucination'
+        token_counts: dict with 'prompt_tokens', 'generated_tokens', 'total_tokens', 'max_tokens'
+    """
+    if not results:
+        print(f"{YELLOW}No tokens generated.{RESET}")
+        return
+
+    # Check which scores are present in results
+    has_mem = any("mem_score" in item or "score" in item for item in results) and task != "hallucination"
+    has_halluc = any("halluc_score" in item for item in results) and task != "memorization"
+    is_dual = has_mem and has_halluc
+
+    if is_dual:
+        header_tag = "Memorization [M] | Hallucination [H]"
+    elif has_halluc:
+        header_tag = "Hallucination [HALLUC]"
+    else:
+        header_tag = "Memorization [MEM]"
+
+    print(f"\n{BOLD_CYAN}=== Generated Text with Inline Per-Token Risk ({header_tag}) ==={RESET}\n")
+
+    mem_scores = []
+    halluc_scores = []
+
+    for item in results:
+        token = item.get("token", "")
+        mem_s = item.get("mem_score", item.get("score"))
+        halluc_s = item.get("halluc_score")
+
+        if mem_s is not None and has_mem:
+            mem_scores.append(mem_s)
+        if halluc_s is not None and has_halluc:
+            halluc_scores.append(halluc_s)
+
+        if is_dual:
+            tag_str = (
+                f"{GRAY}[{RESET}"
+                f"{format_colored_score('M', mem_s)}"
+                f"{GRAY}|{RESET}"
+                f"{format_colored_score('H', halluc_s)}"
+                f"{GRAY}]{RESET}"
+            )
+        elif has_halluc and halluc_s is not None:
+            tag_str = f"{GRAY}[{RESET}{format_colored_score('HALLUC', halluc_s)}{GRAY}]{RESET}"
+        elif mem_s is not None:
+            tag_str = f"{GRAY}[{RESET}{format_colored_score('MEM', mem_s)}{GRAY}]{RESET}"
+        else:
+            tag_str = ""
+
+        print(f"{token}{tag_str}", end="")
+    print("\n")
+
+    # Summary Card
+    width = 58
+    print(f"{CYAN}{'=' * width}{RESET}")
+    print(f"{BOLD_CYAN}{'INFERENCE & PROBE SUMMARY':^{width}}{RESET}")
+    print(f"{CYAN}{'=' * width}{RESET}")
+
+    # Token Count Section
+    gen_cnt = len(results)
+    if token_counts:
+        gen_cnt = token_counts.get("generated_tokens", len(results))
+        max_limit = token_counts.get("max_tokens")
+        prompt_cnt = token_counts.get("prompt_tokens")
+
+        limit_info = f" (Token Limit: {max_limit})" if max_limit else ""
+        if max_limit and gen_cnt >= max_limit:
+            limit_info = f" (Token Limit: {max_limit} [Limit Reached])"
+        elif max_limit and gen_cnt < max_limit:
+            limit_info = f" (Token Limit: {max_limit} [EOS Reached])"
+
+        print(f"  {BOLD}Generated Answer{RESET}   : {BOLD_CYAN}{gen_cnt} tokens{RESET}{limit_info}")
+        if prompt_cnt is not None:
+            print(f"  {BOLD}Prompt Length{RESET}      : {prompt_cnt} tokens")
+    else:
+        print(f"  {BOLD}Generated Answer{RESET}   : {BOLD_CYAN}{gen_cnt} tokens{RESET}")
+
+    # Memorization Probe Stats
+    if has_mem and mem_scores:
+        mem_max = max(mem_scores)
+        mem_avg = sum(mem_scores) / len(mem_scores)
+        print(f"{GRAY}{'-' * width}{RESET}")
+        print(f"  {BOLD}PROBE: MEMORIZATION{RESET}")
+        print(f"    - Risk Level     : {get_risk_level_str(mem_max)}")
+        print(f"    - Max Token Score: {mem_max:.4f}")
+        print(f"    - Avg Token Score: {mem_avg:.4f}")
+
+    # Hallucination Probe Stats
+    if has_halluc and halluc_scores:
+        halluc_max = max(halluc_scores)
+        halluc_avg = sum(halluc_scores) / len(halluc_scores)
+        print(f"{GRAY}{'-' * width}{RESET}")
+        print(f"  {BOLD}PROBE: HALLUCINATION{RESET}")
+        print(f"    - Risk Level     : {get_risk_level_str(halluc_max)}")
+        print(f"    - Max Token Score: {halluc_max:.4f}")
+        print(f"    - Avg Token Score: {halluc_avg:.4f}")
+
+    print(f"{CYAN}{'=' * width}{RESET}\n")
