@@ -28,8 +28,8 @@ class ProbeResults(list):
         self.token_counts = token_counts or {}
 
 
-MEM_PROBE_DEFAULT = "results/memorization/probe.joblib"
-HALLUC_PROBE_DEFAULT = "results/hallucination/probe.joblib"
+MEM_PROBE_DEFAULT = "results/memorization/probe_prefix_k5.joblib"
+HALLUC_PROBE_DEFAULT = "results/hallucination/probe_prefix_k5.joblib"
 
 
 def load_probe_payload(probe_path="results/memorization/probe.joblib"):
@@ -123,6 +123,20 @@ def generate_with_probe(
         hidden_states = outputs.hidden_states
 
         # 4. Extract layer representations for the new prefix continuation
+        #
+        # NOTE — train/inference representation mismatch (documented limitation):
+        # During training, each example's activations were extracted from the model
+        # running over the FULL generated continuation in one forward pass, producing
+        # a single sequence-level feature vector per example (mean_pooled or last_token
+        # over all N continuation tokens).
+        # Here, the probe is applied after every newly generated token, meaning the
+        # feature at step t is computed over only t tokens of the growing continuation.
+        # The distribution of mean_pooled(t tokens) differs from mean_pooled(N tokens),
+        # so scores at early generation steps are produced from an out-of-distribution
+        # feature space relative to the probe's training inputs.
+        # Scores become more representative as the continuation grows toward the lengths
+        # seen during training.  The sequence-level headline F1 evaluation is unaffected
+        # by this gap — only the per-token display is subject to it.
         token_entry = {"token": token_str}
 
         # Memorization probe scoring
@@ -176,11 +190,14 @@ def generate_with_probe(
         next_token_logits = outputs.logits[0, -1, :]
         next_token_id = torch.argmax(next_token_logits).item()
 
+    full_generated_text = tokenizer.decode(gen_ids, skip_special_tokens=True)
+
     token_counts = {
         "prompt_tokens": prompt_len,
         "generated_tokens": len(gen_ids),
         "total_tokens": prompt_len + len(gen_ids),
         "max_tokens": max_tokens,
+        "generated_text": full_generated_text,
     }
 
     return ProbeResults(token_entries, token_counts=token_counts)

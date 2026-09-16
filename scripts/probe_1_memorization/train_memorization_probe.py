@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import UndefinedMetricWarning
 
@@ -127,23 +128,39 @@ def main():
             last_token_by_layer[l][idx] = example_acts[l]['last_token'].astype(np.float32)
             mean_pooled_by_layer[l][idx] = example_acts[l]['mean_pooled'].astype(np.float32)
             
-    # 4. Rank layers using Cohen's d
-    logger.info("Ranking layers via absolute Cohen's d effect sizes...")
-    rankings_last = rank_layers(last_token_by_layer, labels)
-    rankings_mean = rank_layers(mean_pooled_by_layer, labels)
-    
+    # 4. Stratified train/test split (80/20)
+    # The split MUST happen before layer selection so that test-set labels and
+    # activations cannot influence which layers or representation type is chosen.
+    indices = np.arange(num_examples)
+    train_idx, test_idx, y_train, y_test = train_test_split(
+        indices, labels, test_size=0.2, stratify=labels, random_state=42
+    )
+    logger.info(f"Split: {len(train_idx)} train / {len(test_idx)} test examples "
+                f"(stratified 80/20, random_state=42, "
+                f"{np.sum(y_train==1)} memorized in train / {np.sum(y_test==1)} memorized in test)")
+
+    # 5. Rank layers using Cohen's d on TRAINING DATA ONLY
+    # Slicing layer dicts to train_idx ensures test-set labels and activations
+    # have zero influence on layer selection or representation selection.
+    logger.info("Ranking layers via absolute Cohen's d effect sizes (training data only)...")
+    train_last = {l: last_token_by_layer[l][train_idx] for l in range(num_layers)}
+    train_mean = {l: mean_pooled_by_layer[l][train_idx] for l in range(num_layers)}
+
+    rankings_last = rank_layers(train_last, y_train)
+    rankings_mean = rank_layers(train_mean, y_train)
+
     logger.info("=== Top 5 Layers for last-token representation ===")
     for rank_idx, (layer_idx, score) in enumerate(rankings_last[:5]):
         logger.info(f"  Rank {rank_idx+1}: Layer {layer_idx} (d={score:.4f})")
-        
+
     logger.info("=== Top 5 Layers for mean-pooled representation ===")
     for rank_idx, (layer_idx, score) in enumerate(rankings_mean[:5]):
         logger.info(f"  Rank {rank_idx+1}: Layer {layer_idx} (d={score:.4f})")
-        
-    # Decide best representation type
+
+    # Decide best representation type using training-only rankings
     best_last_score = rankings_last[0][1]
     best_mean_score = rankings_mean[0][1]
-    
+
     if best_last_score >= best_mean_score:
         best_rep = 'last_token'
         best_rankings = rankings_last
@@ -154,20 +171,13 @@ def main():
         best_rankings = rankings_mean
         best_layer_data = mean_pooled_by_layer
         logger.info(f"Selecting 'mean_pooled' representation (highest Cohen's d = {best_mean_score:.4f} at Layer {rankings_mean[0][0]})")
-        
-    # Save the layer rankings chart
+
+    # Save the layer rankings chart (based on training-only Cohen's d)
     os.makedirs(RESULTS_DIR, exist_ok=True)
     chart_path = os.path.join(RESULTS_DIR, "layer_rankings.png")
     plot_layer_rankings(best_rankings, chart_path)
     logger.info(f"Saved Cohen's d bar chart plot to: {chart_path}")
-    
-    # 5. Stratified train/test split (80/20)
-    indices = np.arange(num_examples)
-    from sklearn.model_selection import train_test_split
-    train_idx, test_idx, y_train, y_test = train_test_split(
-        indices, labels, test_size=0.2, stratify=labels, random_state=42
-    )
-    
+
     # Select top 3 layers for probe feature concatenation
     selected_layers = [item[0] for item in best_rankings[:3]]
     logger.info(f"Concatenating features from top 3 layers: {selected_layers}")
@@ -226,21 +236,48 @@ def main():
     logger.info("=== Running Held-Out Category Generalization Test (Holding out code_snippets) ===")
     
     train_gen_idx = np.where(df['source_category'] != 'code_snippets')[0]
-    test_gen_idx = np.where(df['source_category'] == 'code_snippets')[0]
-    
-    logger.info(f"Training on: {len(train_gen_idx)} non-code examples ({np.sum(labels[train_gen_idx] == 1)} memorized)")
-    logger.info(f"Testing on : {len(test_gen_idx)} code examples ({np.sum(labels[test_gen_idx] == 1)} memorized)")
-    
-    X_gen_train = prepare_features(best_layer_data, selected_layers, train_gen_idx)
+    test_gen_idx  = np.where(df['source_category'] == 'code_snippets')[0]
+
+    logger.info(f"OOD training on: {len(train_gen_idx)} non-code examples ({np.sum(labels[train_gen_idx] == 1)} memorized)")
+    logger.info(f"OOD testing on : {len(test_gen_idx)} code examples ({np.sum(labels[test_gen_idx] == 1)} memorized)")
+
+    # FRESH layer / representation selection using OOD training data ONLY.
+    # code_snippets is completely excluded from layer selection, representation
+    # selection, scaler fitting, and probe training — it is used only for
+    # final evaluation.
     y_gen_train = labels[train_gen_idx]
-    
-    X_gen_test = prepare_features(best_layer_data, selected_layers, test_gen_idx)
-    y_gen_test = labels[test_gen_idx]
-    
-    # Fit scaler on generalization training set
+    y_gen_test  = labels[test_gen_idx]
+
+    logger.info("OOD: ranking layers on non-code training data only (code_snippets excluded from all decisions)...")
+    ood_last = {l: last_token_by_layer[l][train_gen_idx] for l in range(num_layers)}
+    ood_mean = {l: mean_pooled_by_layer[l][train_gen_idx] for l in range(num_layers)}
+
+    ood_rankings_last = rank_layers(ood_last, y_gen_train)
+    ood_rankings_mean = rank_layers(ood_mean, y_gen_train)
+
+    ood_best_last_score = ood_rankings_last[0][1]
+    ood_best_mean_score = ood_rankings_mean[0][1]
+    if ood_best_last_score >= ood_best_mean_score:
+        ood_best_rep = 'last_token'
+        ood_best_rankings = ood_rankings_last
+        ood_layer_data = last_token_by_layer
+        logger.info(f"OOD: selecting 'last_token' representation (d={ood_best_last_score:.4f})")
+    else:
+        ood_best_rep = 'mean_pooled'
+        ood_best_rankings = ood_rankings_mean
+        ood_layer_data = mean_pooled_by_layer
+        logger.info(f"OOD: selecting 'mean_pooled' representation (d={ood_best_mean_score:.4f})")
+
+    ood_selected_layers = [item[0] for item in ood_best_rankings[:3]]
+    logger.info(f"OOD selected layers: {ood_selected_layers} (representation: {ood_best_rep})")
+
+    X_gen_train = prepare_features(ood_layer_data, ood_selected_layers, train_gen_idx)
+    X_gen_test  = prepare_features(ood_layer_data, ood_selected_layers, test_gen_idx)
+
+    # Fit scaler on OOD generalization training set ONLY
     gen_scaler = StandardScaler()
     X_gen_train_scaled = gen_scaler.fit_transform(X_gen_train)
-    X_gen_test_scaled = gen_scaler.transform(X_gen_test)
+    X_gen_test_scaled  = gen_scaler.transform(X_gen_test)
     
     # Train and evaluate Linear Probe
     logger.info("Training Linear Probe on Generalization split...")
