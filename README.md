@@ -95,6 +95,20 @@ data/
 
 ---
 
+## Testing
+
+There's no pytest suite — sanity checks are plain scripts that exercise the real model end-to-end (requires a CUDA GPU and downloads `Phi-3-mini-4k-instruct` on first run):
+
+```bash
+# Model load + deterministic generation smoke test
+.\.venv\Scripts\python.exe test_generation.py
+
+# Full live-probe pipeline against 4 fixed prompts; writes results/memorization/demo_test_results.md
+.\.venv\Scripts\python.exe scripts/probe_1_memorization/test_demo_prompts.py
+```
+
+---
+
 ## Live CLI Inference
 
 Live token-by-token risk analysis runs directly in your terminal with full ANSI color coding, statistical risk summaries, generated answer token counts, and token limit controls. **Both Memorization and Hallucination probes run simultaneously by default.**

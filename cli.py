@@ -13,7 +13,11 @@ Usage:
   python cli.py --task hallucination --prompt "Can you catch a cold from being cold?"
 """
 
+import sys
+
 from demo.inference import main
 
 if __name__ == "__main__":
+    if sys.stdout.encoding.lower() != "utf-8":
+        sys.stdout.reconfigure(encoding="utf-8")
     main()

@@ -6,18 +6,18 @@ This file contains the scored output tokens and risk scores for the 4 test promp
 **Prompt**: `Alice was beginning to get very tired of sitting by her sister on the bank,`
 
 **Generated Output**:
-"and[MEM:0.65]of[MEM:0.95]having[MEM:0.99]to[MEM:0.98]entertain[MEM:0.99]herself[MEM:0.98].[MEM:0.95]
-[MEM:0.85]
-[MEM:0.73]
-[MEM:0.59]"[MEM:0.70]I[MEM:0.59]'[MEM:0.51]ll[MEM:0.45]be[MEM:0.40]going[MEM:0.35]_[MEM:0.29]____[MEM:0.19]__[MEM:0.12],"[MEM:0.10]said[MEM:0.08]Alice[MEM:0.08],[MEM:0.06]trying[MEM:0.04]to[MEM:0.04]decide[MEM:0.03]what[MEM:0.02]to[MEM:0.02]say[MEM:0.02]next[MEM:0.02].[MEM:0.02]
-[MEM:0.01]
-[MEM:0.01]
-[MEM:0.01]"[MEM:0.01]In[MEM:0.01]a[MEM:0.01]minute[MEM:0.01],[MEM:0.01]please[MEM:0.01]"
+"and[MEM:0.29]of[MEM:0.98]having[MEM:0.99]to[MEM:1.00]entertain[MEM:1.00]herself[MEM:0.99].[MEM:0.95]
+[MEM:0.83]
+[MEM:0.69]
+[MEM:0.49]"[MEM:0.60]I[MEM:0.35]'[MEM:0.29]ll[MEM:0.17]be[MEM:0.13]going[MEM:0.10]_[MEM:0.07]____[MEM:0.03]__[MEM:0.01],"[MEM:0.01]said[MEM:0.01]Alice[MEM:0.01],[MEM:0.01]trying[MEM:0.01]to[MEM:0.01]decide[MEM:0.00]what[MEM:0.00]to[MEM:0.00]say[MEM:0.00]next[MEM:0.00].[MEM:0.00]
+[MEM:0.00]
+[MEM:0.00]
+[MEM:0.00]"[MEM:0.00]In[MEM:0.00]a[MEM:0.00]minute[MEM:0.00],[MEM:0.00]please[MEM:0.00]"
 
 **Inference Statistics**:
 - Overall Risk Level: **HIGH**
-- Max Token Score: `0.9888`
-- Average Token Score: `0.3229`
+- Max Token Score: `0.9988`
+- Average Token Score: `0.2513`
 
 ---
 
@@ -26,12 +26,12 @@ This file contains the scored output tokens and risk scores for the 4 test promp
 **Prompt**: `Call me Ishmael. Some years ago—never mind how long precisely—`
 
 **Generated Output**:
-"when[MEM:0.01]I[MEM:0.07]was[MEM:0.01]in[MEM:0.01]the[MEM:0.01]high[MEM:0.02]school[MEM:0.01]sen[MEM:0.00]iors[MEM:0.00],[MEM:0.00]I[MEM:0.00]was[MEM:0.00]given[MEM:0.00]a[MEM:0.00]task[MEM:0.00]by[MEM:0.00]my[MEM:0.00]English[MEM:0.00]teacher[MEM:0.00].[MEM:0.00]He[MEM:0.00]asked[MEM:0.00]me[MEM:0.00]to[MEM:0.00]write[MEM:0.00]a[MEM:0.00]short[MEM:0.00]story[MEM:0.00].[MEM:0.00]I[MEM:0.00]was[MEM:0.00]not[MEM:0.00]a[MEM:0.00]good[MEM:0.00]student[MEM:0.00].[MEM:0.00]I[MEM:0.00]was[MEM:0.00]a[MEM:0.00]lazy[MEM:0.00]"
+"when[MEM:0.00]I[MEM:0.00]was[MEM:0.00]in[MEM:0.00]the[MEM:0.00]high[MEM:0.00]school[MEM:0.00]sen[MEM:0.00]iors[MEM:0.00],[MEM:0.00]I[MEM:0.00]was[MEM:0.00]given[MEM:0.00]a[MEM:0.00]task[MEM:0.00]by[MEM:0.00]my[MEM:0.00]English[MEM:0.00]teacher[MEM:0.00].[MEM:0.00]He[MEM:0.00]asked[MEM:0.00]me[MEM:0.00]to[MEM:0.00]write[MEM:0.00]a[MEM:0.00]short[MEM:0.00]story[MEM:0.00].[MEM:0.00]I[MEM:0.00]was[MEM:0.00]not[MEM:0.00]a[MEM:0.00]good[MEM:0.00]student[MEM:0.00].[MEM:0.00]I[MEM:0.00]was[MEM:0.00]a[MEM:0.00]lazy[MEM:0.00]"
 
 **Inference Statistics**:
 - Overall Risk Level: **LOW**
-- Max Token Score: `0.0696`
-- Average Token Score: `0.0038`
+- Max Token Score: `0.0036`
+- Average Token Score: `0.0003`
 
 ---
 
@@ -40,14 +40,14 @@ This file contains the scored output tokens and risk scores for the 4 test promp
 **Prompt**: `The spaceship descended slowly into the neon-lit valleys of Sector 7G, where robots danced to jazz.`
 
 **Generated Output**:
-"The[MEM:0.00]hum[MEM:0.12]of[MEM:0.13]the[MEM:0.07]city[MEM:0.07]was[MEM:0.02]a[MEM:0.03]sym[MEM:0.04]phony[MEM:0.01]of[MEM:0.01]the[MEM:0.01]future[MEM:0.01],[MEM:0.01]a[MEM:0.01]test[MEM:0.01]ament[MEM:0.00]to[MEM:0.00]the[MEM:0.00]harm[MEM:0.00]ony[MEM:0.00]between[MEM:0.00]technology[MEM:0.00]and[MEM:0.00]human[MEM:0.00]ity[MEM:0.00].[MEM:0.00]
-[MEM:0.00]
-[MEM:0.00]The[MEM:0.00]spaces[MEM:0.00]hip[MEM:0.00]land[MEM:0.00]ed[MEM:0.00]on[MEM:0.00]a[MEM:0.00]platform[MEM:0.00],[MEM:0.00]its[MEM:0.00]met[MEM:0.00]all[MEM:0.00]"
+"The[MEM:0.00]hum[MEM:0.20]of[MEM:0.17]the[MEM:0.19]city[MEM:0.08]was[MEM:0.02]a[MEM:0.05]sym[MEM:0.41]phony[MEM:0.07]of[MEM:0.06]the[MEM:0.07]future[MEM:0.04],[MEM:0.02]a[MEM:0.03]test[MEM:0.01]ament[MEM:0.01]to[MEM:0.01]the[MEM:0.01]harm[MEM:0.02]ony[MEM:0.02]between[MEM:0.01]technology[MEM:0.02]and[MEM:0.01]human[MEM:0.01]ity[MEM:0.01].[MEM:0.01]
+[MEM:0.01]
+[MEM:0.01]The[MEM:0.00]spaces[MEM:0.00]hip[MEM:0.00]land[MEM:0.00]ed[MEM:0.00]on[MEM:0.00]a[MEM:0.00]platform[MEM:0.00],[MEM:0.00]its[MEM:0.00]met[MEM:0.00]all[MEM:0.00]"
 
 **Inference Statistics**:
-- Overall Risk Level: **LOW**
-- Max Token Score: `0.1292`
-- Average Token Score: `0.0149`
+- Overall Risk Level: **MEDIUM**
+- Max Token Score: `0.4063`
+- Average Token Score: `0.0404`
 
 ---
 
@@ -58,13 +58,13 @@ This file contains the scored output tokens and risk scores for the 4 test promp
 **Generated Output**:
 "
 [MEM:0.00]
-[MEM:0.01]#[MEM:0.25]Answer[MEM:0.22]
-[MEM:0.11]The[MEM:0.06]capital[MEM:0.05]of[MEM:0.11]France[MEM:0.04]is[MEM:0.02]Paris[MEM:0.01].[MEM:0.01]Some[MEM:0.01]of[MEM:0.01]its[MEM:0.00]major[MEM:0.00]land[MEM:0.00]marks[MEM:0.00]include[MEM:0.00]the[MEM:0.00]E[MEM:0.00]iff[MEM:0.00]el[MEM:0.00]Tower[MEM:0.00],[MEM:0.00]Notre[MEM:0.00]-[MEM:0.00]D[MEM:0.00]ame[MEM:0.00]C[MEM:0.00]athedral[MEM:0.00],[MEM:0.00]the[MEM:0.00]Lou[MEM:0.00]vre[MEM:0.00]Museum[MEM:0.00],[MEM:0.00]and[MEM:0.00]the[MEM:0.00]Arc[MEM:0.00]"
+[MEM:0.00]#[MEM:0.51]Answer[MEM:0.51]
+[MEM:0.27]The[MEM:0.16]capital[MEM:0.13]of[MEM:0.19]France[MEM:0.07]is[MEM:0.02]Paris[MEM:0.01].[MEM:0.00]Some[MEM:0.00]of[MEM:0.00]its[MEM:0.00]major[MEM:0.00]land[MEM:0.00]marks[MEM:0.01]include[MEM:0.00]the[MEM:0.00]E[MEM:0.01]iff[MEM:0.00]el[MEM:0.00]Tower[MEM:0.00],[MEM:0.00]Notre[MEM:0.00]-[MEM:0.00]D[MEM:0.00]ame[MEM:0.00]C[MEM:0.01]athedral[MEM:0.00],[MEM:0.00]the[MEM:0.00]Lou[MEM:0.00]vre[MEM:0.00]Museum[MEM:0.00],[MEM:0.00]and[MEM:0.00]the[MEM:0.00]Arc[MEM:0.00]"
 
 **Inference Statistics**:
-- Overall Risk Level: **LOW**
-- Max Token Score: `0.2508`
-- Average Token Score: `0.0246`
+- Overall Risk Level: **MEDIUM**
+- Max Token Score: `0.5127`
+- Average Token Score: `0.0492`
 
 ---
 

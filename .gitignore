@@ -18,3 +18,6 @@ __pycache__/
 data/memorization/labeled/activations_checkpoint.pkl
 data/hallucination/labeled/activations_checkpoint.pkl
 *.env
+
+graphify-out
+extracted_paper.txt

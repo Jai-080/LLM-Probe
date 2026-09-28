@@ -1,0 +1,12 @@
+torch
+transformers
+accelerate
+bitsandbytes
+datasets
+scikit-learn
+joblib
+pandas
+numpy
+matplotlib
+seaborn
+rouge-score
